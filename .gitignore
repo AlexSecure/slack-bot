@@ -305,3 +305,4 @@ $RECYCLE.BIN/
 */build/*
 
 env.json
+.aws-sam
