@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  slack-bot-app
+
+  Slack Bot App Questionnaire
+
+Globals:
+  Function:
+    Timeout: 10
+
+Parameters:
+  SecretArn:
+    Type: String
+    Description: ARN of the Secrets Manager secret containing the Slack App credentials
+  StageName:
+    Type: String
+    Default: dev
+    Description: The stage name of the API Gateway
+
+Resources:
+  SlackApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: !Ref StageName
+
+  SlackBotAppFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AWSLambdaBasicExecutionRole
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Ref SecretArn
+
+  SlackBotAppFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: app/
+      Handler: app.lambda_handler
+      Runtime: python3.11
+      Role: !GetAtt SlackBotAppFunctionRole.Arn
+      Architectures:
+        - x86_64
+      Layers:
+        - !Ref SlackBotLayer
+      Events:
+        WarmUpSchedule:
+          Type: Schedule
+          Properties:
+            Schedule: rate(3 minutes)
+            Input: '{"source": "aws.events"}'
+        SlackBotApp:
+          Type: HttpApi
+          Properties:
+            Path: /slack-bot-app
+            Method: post
+            ApiId: !Ref SlackApi
+
+  SlackBotLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: slack-bot-layer
+      Description: Slack Bot dependencies layer
+      ContentUri: layer/
+      CompatibleRuntimes:
+        - python3.11
+      RetentionPolicy: Retain
+
+Outputs:
+  SlackBotAppFunction:
+    Description: "Slack App Bot Lambda Function ARN"
+    Value: !GetAtt SlackBotAppFunction.Arn
+
+  SlackApiUrl:
+    Description: "API Gateway endpoint URL for Slack Bot"
+    Value: !Sub "https://${SlackApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/slack-bot-app"
