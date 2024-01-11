@@ -1,11 +1,23 @@
+"""
+This script defines functionality for creating and managing a modal view in a Slack application.
+It defines a modal template (`VIEW_TEMPLATE`) for a questionnaire about security testing levels,
+populates the modal with a list of predefined questions (`questions`), and provides utility
+functions to generate the modal view (`get_view`), extract a number from a string (`extract_number`),
+and parse selected answers from the modal (`get_selected_answers`). The focus is on creating a
+user-interactive experience within Slack where users can respond to a series of questions
+to determine the security testing requirements for their applications.
+"""
+
 import re
 import typing
 
 from common import parser
 
+# A header for the questionnaire in the modal
 SECURITY_TESTING_QUESTIONNAIRE = "Security Testing Level Determination Questionnaire:"
 
 
+# Template for the Slack modal view
 VIEW_TEMPLATE = {
     "type": "modal",
     "callback_id": parser.SLACK_MODAL_WINDOW_ID,  # Unique identifier for the modal

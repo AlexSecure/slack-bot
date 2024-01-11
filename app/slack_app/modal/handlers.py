@@ -1,6 +1,12 @@
+"""
+This script handles modal interactions within a Slack application. It includes functions to open a modal in Slack,
+handle a slash command for modal opening, and process modal submissions. The script integrates with a JIRA application
+to store the results and communicates with the Slack API using the Slack WebClient. It utilizes the modal view and
+questionnaire results from the slack_app module to dynamically generate responses based on user input.
+"""
+
 from slack_sdk import errors
 
-from common import parser
 from jira_app import task
 from slack_app.questions import results, view as modal_view
 
@@ -22,8 +28,8 @@ def open_modal(client, trigger_id):
         )
 
     except errors.SlackApiError as e:
-        # Print error if the modal fails to open
-        print(f"Error opening modal: {e}")
+        # Raise an exception if the modal fails to open
+        raise Exception(f"Error opening modal: {str(e)}")
 
 
 def handle_open_modal(ack, body, client):
@@ -60,6 +66,7 @@ def handle_modal_submission(ack, body, view, client):
     # Extract the user ID who submitted the modal
     user_id = body["user"]["id"]
 
+    # Retrieve user information from Slack
     user_result = client.users_info(user=user_id)
     user = user_result.get("user", {})
 
@@ -70,11 +77,13 @@ def handle_modal_submission(ack, body, view, client):
     except Exception:
         raise Exception(f"Failed to get 'selected_options' data.")
 
+    # Save the answers in JIRA and get the task link
     task_link = task.save_answers(
         result=results.generate_response_jira(selected_answers, user),
         user=user
     )
 
+    # Generate a response for Slack based on the selected answers
     message = results.generate_response_slack(selected_answers, user, task_link)
 
     # Send a message to the user with the calculated score and description

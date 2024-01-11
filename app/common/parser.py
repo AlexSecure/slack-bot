@@ -15,6 +15,7 @@ Functions:
 import typing
 
 
+# Constant for the Slack modal window identifier
 SLACK_MODAL_WINDOW_ID = "id-modal-window"
 
 
