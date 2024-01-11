@@ -1,29 +1,40 @@
+# Sets the version of the configuration file; useful for tracking file updates and compatibility
 version = 0.1
 
+# [default] signifies the beginning of a default configuration section
 [default]
+
+# [default.global.parameters] section for setting global parameters applicable across various commands
 [default.global.parameters]
-stack_name = "slack-bot-app"
+stack_name = "slack-bot-app"  # Name of the stack, used as an identifier for deployment
 
+# [default.build.parameters] section specifies parameters for the build process
 [default.build.parameters]
-cached = true
-parallel = true
+cached = true        # Enables caching to speed up the build process
+parallel = true      # Allows parallel execution where possible to speed up the build
 
+# [default.validate.parameters] section for validation-related settings
 [default.validate.parameters]
-lint = true
+lint = true          # Enables linting to check the syntax and structure of the code
 
+# [default.deploy.parameters] section defines parameters for the deployment process
 [default.deploy.parameters]
-capabilities = "CAPABILITY_IAM"
-confirm_changeset = true
-resolve_s3 = true
+capabilities = "CAPABILITY_IAM"  # Grants the deployment permission to create IAM resources
+confirm_changeset = true         # Requires confirmation for changes before deployment
+resolve_s3 = true                # Enables automatic resolution of S3 bucket names
 
+# [default.package.parameters] section for packaging-specific settings
 [default.package.parameters]
-resolve_s3 = true
+resolve_s3 = true    # Resolves S3 bucket names during the package phase as well
 
+# [default.sync.parameters] section for synchronization settings
 [default.sync.parameters]
-watch = true
+watch = true         # Enables the watching of file changes for automatic synchronization
 
+# [default.local_start_api.parameters] section for parameters related to starting the API locally
 [default.local_start_api.parameters]
-warm_containers = "EAGER"
+warm_containers = "EAGER"  # Preloads containers for faster local API start
 
+# [default.local_start_lambda.parameters] section for Lambda-specific local start settings
 [default.local_start_lambda.parameters]
-warm_containers = "EAGER"
+warm_containers = "EAGER"  # Preloads containers for quicker start of Lambda functions locally
